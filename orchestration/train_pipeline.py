@@ -21,6 +21,7 @@ class Config:
     data_path: str = "../data/data_raw"
 
 
+@task(retries=3)
 def download_data(train_url: str, val_url: str, output_path: str) -> str:
     """
     Download data from Google Drive using gdown.
@@ -29,15 +30,15 @@ def download_data(train_url: str, val_url: str, output_path: str) -> str:
     test_data_path = f"{output_path}/green_taxi_data_02.csv"
     if not os.path.exists(output_path):
         os.makedirs(output_path)
-    gdown.download(
+    gdown.cached_download(
         f"https://drive.google.com/uc?id={train_url}", train_data_path, quiet=False
     )
-    gdown.download(
+    gdown.cached_download(
         f"https://drive.google.com/uc?id={val_url}", test_data_path, quiet=False
     )
     return train_data_path, test_data_path
 
-
+@task
 def read_clean_data(file_path: str) -> pd.DataFrame:
     if file_path.endswith(".csv"):
         df = pd.read_csv(file_path)
@@ -59,7 +60,7 @@ def read_clean_data(file_path: str) -> pd.DataFrame:
 
     return df
 
-
+@task
 def preprocess_data(
     df_train: pd.DataFrame, df_val: pd.DataFrame
 ) -> Tuple[DictVectorizer, csr_matrix, np.ndarray, csr_matrix, np.ndarray]:
@@ -82,7 +83,7 @@ def preprocess_data(
 
     return dv, X_train, y_train, X_val, y_val
 
-
+@task
 def train_model(X_train: csr_matrix, y_train: np.ndarray) -> LinearRegression:
     """
     Train the model.
@@ -91,7 +92,7 @@ def train_model(X_train: csr_matrix, y_train: np.ndarray) -> LinearRegression:
     model.fit(X_train, y_train)
     return model
 
-
+@task(log_prints=True)
 def evaluate_model(
     model: LinearRegression, X_val: csr_matrix, y_val: np.ndarray
 ) -> float:
@@ -100,9 +101,10 @@ def evaluate_model(
     """
     y_pred = model.predict(X_val)
     rmse = root_mean_squared_error(y_val, y_pred)
+    print(f"RMSE: {rmse:.3f}")
     return rmse
 
-
+@task
 def save_model(
     model: LinearRegression,
     dv: DictVectorizer,
@@ -129,7 +131,7 @@ def save_model(
     model_artifact.add_file(f"{model_path}/dv.bin")
     run.log_artifact(model_artifact)
 
-
+@flow
 def main():
     cfg = Config()
 
@@ -162,9 +164,14 @@ def main():
     rmse = evaluate_model(model, X_val, y_val)
 
     run.summary["rmse"] = rmse
-    print(f"RMSE: {rmse:.3f}")
     save_model(model, dv, cfg.model_path, run)
 
 
 if __name__ == "__main__":
-    main()
+    # flow.from_source
+    main.serve(
+        name="train_pipeline",
+        tags=["train"],
+        cron="0 0 * * *",  # Run daily at midnight
+    )
+    # main()
