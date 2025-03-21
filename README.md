@@ -10,4 +10,13 @@ Install dependencies
 ```bash
 python -m venv .venv 
 
+pip install -r requirements.txt
+```
+
+
+## Workflow orchestration with Prefect
+
+Start prefect server
+```bash
+prefect server start
 ```
