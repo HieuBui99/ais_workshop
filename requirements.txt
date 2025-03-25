@@ -4,3 +4,5 @@ pandas
 wandb
 python-dotenv
 prefect
+fastapi
+pydantic

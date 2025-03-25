@@ -56,8 +56,6 @@ def read_clean_data(file_path: str) -> pd.DataFrame:
     categorical = ["PULocationID", "DOLocationID"]
     df[categorical] = df[categorical].astype(str)
 
-    df["PU_DO"] = df["PULocationID"] + "_" + df["DOLocationID"]
-
     return df
 
 @task
@@ -67,7 +65,7 @@ def preprocess_data(
     """
     Preprocess the data for training.
     """
-    categorical = ["PU_DO"]  #'PULocationID', 'DOLocationID']
+    categorical = ['PULocationID', 'DOLocationID']
     numerical = ["trip_distance"]
     dv = DictVectorizer()
 
@@ -169,9 +167,9 @@ def main():
 
 if __name__ == "__main__":
     # flow.from_source
-    main.serve(
-        name="train_pipeline",
-        tags=["train"],
-        cron="0 0 * * *",  # Run daily at midnight
-    )
-    # main()
+    # main.serve(
+    #     name="train_pipeline",
+    #     tags=["train"],
+    #     cron="0 0 * * *",  # Run daily at midnight
+    # )
+    main()
