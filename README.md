@@ -8,13 +8,22 @@ Code for Spring 2025 AIS Lab Undergrad Workshop
 Install dependencies
 
 ```bash
+git clone https://github.com/HieuBui99/ais_workshop.git
+
+cd ais_workshop
+
 python -m venv .venv 
 
 pip install -r requirements.txt
 ```
 
 ## Experiment tracking with Weight & Biases
-Login
+Colab notebooks:
+* https://colab.research.google.com/drive/1kyNh4v5Nh9k_gk2SWKV1FwHS0t9KfP6m?usp=sharing
+* https://colab.research.google.com/github/KIIIIT00/B3_Spring/blob/main/MNIST_ML.ipynb
+
+
+Login with wandb account
 ```bash
 wandb login
 ```
